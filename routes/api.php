@@ -1,24 +1,49 @@
 <?php
 
-use App\Http\Controllers\AuthController;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\PostController;
 
-// Public route for authentication (issuing a token)
-Route::post('/login', [AuthController::class, 'login']);
+// Register
+Route::post('/register', function (Request $request) {
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:6',
+    ]);
 
-// Protected routes that require a valid token
-Route::middleware('auth:sanctum')->group(function () {
-    // This route returns the authenticated user's details
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+    ]);
 
-    // This route revokes the user's current token
-    Route::post('/logout', [AuthController::class, 'logout']);
+    return response()->json($user, 201);
+});
 
-    // Your existing post routes are now protected by Sanctum.
-    // If you want them to be public, move this line outside the middleware group.
-    Route::apiResource('posts', PostController::class);
+// Login
+Route::post('/login', function (Request $request) {
+    $request->validate([
+        'email' => 'required|string|email',
+        'password' => 'required|string',
+    ]);
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Invalid credentials'], 401);
+    }
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+    ]);
+});
+
+// Protected route example
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
 });
