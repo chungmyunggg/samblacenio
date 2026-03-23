@@ -2,9 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Flight;
 use App\Models\Post;
 use App\Models\User;
+use App\Models\Scopes\SortByCreatedAtScope;
+use App\Observers\UserObserver;
 use App\Policies\PostPolicy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -24,6 +28,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register Observers
+        User::observe(UserObserver::class);
+
+        // Global Scopes
+        // Registering the SortByCreatedAtScope globally for Flights ensures they always appear newest first
+        Flight::addGlobalScope(new SortByCreatedAtScope);
+
+        // Local Scopes (implemented as Macros since we are modifying the Provider)
+        // Usage: Flight::expensive()->get();
+        Builder::macro('expensive', function () {
+            /** @var Builder $this */
+            return $this->where('price', '>', 1000);
+        });
+
         // Implicitly grant "Super Admin" role all permissions
         // This works in the app by using gate-related functions like auth()->user->can() and @can()
         Gate::before(function (User $user, string $ability) {

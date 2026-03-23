@@ -45,4 +45,13 @@ class Flight extends Model
         'destination',
         'destination_id',
     ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'attachment_info' => 'array',
+    ];
 }

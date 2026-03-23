@@ -19,7 +19,7 @@ class FlightController extends Controller
         // the flight that most recently arrived at that destination.
         return Destination::addSelect(['last_flight' => Flight::select('name')
             ->whereColumn('destination_id', 'destinations.id')
-            ->orderByDesc('arrived_at')
+            ->orderByDesc('created_at')
             ->limit(1)
         ])->get();
     }
@@ -67,6 +67,7 @@ class FlightController extends Controller
 
         if ($attachmentInfo) {
             $flight->attachment_info = $attachmentInfo;
+            $flight->save();
         }
 
         return response()->json($flight, 201);
