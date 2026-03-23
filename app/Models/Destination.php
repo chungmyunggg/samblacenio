@@ -9,5 +9,15 @@ class Destination extends Model
 {
     use HasFactory;
 
-    //
+    protected $fillable = [
+        'name',
+    ];
+
+    /**
+     * Get the flights for the destination.
+     */
+    public function flights()
+    {
+        return $this->hasMany(Flight::class);
+    }
 }
