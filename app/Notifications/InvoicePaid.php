@@ -96,8 +96,9 @@ class InvoicePaid extends Notification implements ShouldQueue
      */
     public function shouldSend(object $notifiable, string $channel): bool
     {
-        // Ensure invoice is an object and check isPaid condition safely
-        return is_object($this->invoice) && (! method_exists($this->invoice, 'isPaid') || $this->invoice->isPaid());
+        // Allow if invoice is not an object (e.g. array data), OR if it is an object that is paid/has no isPaid method.
+        // This ensures compatibility with data_get used in toMail/toArray.
+        return ! is_object($this->invoice) || (! method_exists($this->invoice, 'isPaid') || $this->invoice->isPaid());
     }
 
     /**
