@@ -36,6 +36,16 @@ return [
             'serve' => true,
             'throw' => true,
             'report' => false,
+            'permissions' => [
+                'file' => [
+                    'public' => 0644,
+                    'private' => 0600,
+                ],
+                'dir' => [
+                    'public' => 0755,
+                    'private' => 0700,
+                ],
+            ],
         ],
 
         'public' => [
@@ -58,6 +68,12 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => true,
             'report' => false,
+        ],
+
+        'dropbox' => [
+            'driver' => 'dropbox',
+            'authorization_token' => env('DROPBOX_AUTH_TOKEN'),
+            'throw' => true,
         ],
 
     ],

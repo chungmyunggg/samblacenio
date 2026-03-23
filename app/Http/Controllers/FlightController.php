@@ -43,9 +43,9 @@ class FlightController extends Controller
         // Handle file upload if present
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
-            // Store file using the 'local' driver (or configured default)
-            // This corresponds to the "Storing Files" section
-            $path = Storage::putFile('flight-attachments', $file);
+            // Store file using the store method on the UploadedFile instance
+            // This corresponds to the "File Uploads" section
+            $path = $file->store('flight-attachments');
 
             if ($path) {
                 // Retrieve Metadata as per "File Metadata" section
@@ -122,5 +122,34 @@ class FlightController extends Controller
         );
 
         return response()->json(['upload_url' => $url, 'headers' => $headers]);
+    }
+
+    /**
+     * List all files in the flight attachments directory.
+     * Corresponds to "Get All Files Within a Directory".
+     */
+    public function listAttachments(): JsonResponse
+    {
+        // Get files in directory
+        $files = Storage::files('flight-attachments');
+        // Get all files recursively
+        $allFiles = Storage::allFiles('flight-attachments');
+
+        return response()->json(['files' => $files, 'all_files' => $allFiles]);
+    }
+
+    /**
+     * Clean up and recreate the attachments directory.
+     * Corresponds to "Directories" (makeDirectory, deleteDirectory).
+     */
+    public function refreshAttachmentsDirectory(): JsonResponse
+    {
+        // Delete directory and all contents
+        Storage::deleteDirectory('flight-attachments');
+
+        // Create directory again
+        Storage::makeDirectory('flight-attachments');
+
+        return response()->json(['message' => 'Attachments directory refreshed']);
     }
 }
